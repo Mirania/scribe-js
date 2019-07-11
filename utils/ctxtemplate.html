@@ -1,0 +1,64 @@
+<html>
+    <head>
+        <script type="text/javascript">
+        var filename = "";
+        var file = [];
+
+        function fill() {
+            var args = window.location.search.split("=");
+            var line = args[1];
+            console.log(line)
+            if (isNaN(line) || line<1 || line>file.length) {
+                document.getElementById("all").innerHTML = "'Line' argument is either missing or invalid.";
+                return;
+            }
+
+            document.getElementById("all").appendChild(context(filename, line));
+
+            if (line>5) {
+                location.href = "#";
+                location.href = "#l"+(line-5);
+            }
+        }
+
+        function context(name, line) {
+            var titlediv = document.createElement("div");
+            titlediv.style = "width: 100%"; titlediv.id = "title";
+            var title = document.createElement("p");
+            title.innerHTML = name+" ...";
+            title.style = "margin-bottom: 2; padding-left: 3";
+            var ndiv = document.createElement("div");
+            ndiv.style = "width: 40; text-align: right";
+            var ldiv = document.createElement("div");
+            ldiv.style = "width: 100%; min-width: fit-content";
+            var container = document.createElement("div");
+            var corediv = document.createElement("div");
+            corediv.style = "display: flex";
+
+            for (let i=0; i<file.length; i++) {
+                var nli = document.createElement("div");
+                var lli = document.createElement("div");
+                nli.innerHTML = i+1; nli.id = "l"+(i+1);
+                lli.innerHTML = "&nbsp;&nbsp;"+file[i];
+                if (i+1 == line) {
+                    nli.style = "background-color: #9abef5";
+                    lli.style = "background-color: #9abef5";
+                }
+                ndiv.appendChild(nli);
+                ldiv.appendChild(lli);
+            }
+
+            titlediv.appendChild(title);
+            container.appendChild(titlediv);
+            corediv.appendChild(ndiv);
+            corediv.appendChild(ldiv);
+            container.appendChild(corediv);
+
+            return container;
+        }
+        </script>
+    </head>
+    <body onload="fill()" style="font-family: monospace; font-size: 15; color: #222">
+        <div id="all"></div>
+    </body>
+</html>

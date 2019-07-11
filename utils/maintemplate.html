@@ -1,0 +1,236 @@
+<html>
+    <head>
+        <script type="text/javascript">
+            var filename = "";
+            var meta = [];
+            var file = [];
+            var originalfile = [];
+            
+            function load() {
+                originalfile = file.slice();
+                document.getElementById("fname").innerHTML = filename;
+
+                for (var i=0; i<meta.length; i++) {
+                    document.getElementById("all").appendChild(metaDiv(meta[i], i));
+                }
+
+                if (meta.length==0) document.getElementById("done").style.visibility = "hidden";
+            }
+
+            function see(line) {
+                window.open('context.html?line='+line,width=600,height=300);
+            }
+
+            function submit() {
+                for (var i=meta.length-1; i>=0; i--) {
+                    var chk = document.getElementById("check"+i);
+                    if (!chk.checked) continue;
+
+                    var main = document.getElementById("main"+i).value;
+                    
+                    var args = [];
+                    if (meta[i].params) {
+                        for (var x=0;x<meta[i].params.length;x++) {
+                            args.push({name: meta[i].params[x],
+                                       type: document.getElementById("argtype"+x+"entry"+i)== null ? null : document.getElementById("argtype"+x+"entry"+i).value,
+                                       desc: document.getElementById("arg"+x+"entry"+i)== null ? null : document.getElementById("arg"+x+"entry"+i).value
+                            });
+                        }
+                    }
+
+                    var rtype, rdesc;
+                    if (meta[i].type !== "ClassDeclaration") {
+                        rtype = document.getElementById("rettype"+i).value;
+                        rdesc = document.getElementById("ret"+i).value;
+                    } else { rtype = null; rdesc = null; };
+                    
+                    var prefix = "";
+                    for (var u=0; u<meta[i].indent; u++)
+                        prefix += " ";
+                    var cmtlines = comment(main, args, rtype, rdesc).split("\n").map((l) => prefix+l);
+
+                    file.splice(meta[i].line-1, 0, ...cmtlines);
+                }
+
+                download(file.join("\n").replace(/&nbsp;/g, " "), filename, "text/javascript");
+                file = originalfile.slice(); //reset
+                console.log(originalfile,file)
+            }
+
+            function download(text, name, type) {
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:'+type+';charset=utf-8,' + encodeURIComponent(text));
+                element.setAttribute('download', name);
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+            }
+
+            function comment(main, args, rtype, rdesc) {
+                var s = "/**";
+
+                if (main!==null && main!=="") {
+                    s += "\n *";
+                    var m = main.split("\n");
+                    for (sent of m)
+                        s += "\n * "+sent;
+                }
+
+                if (args.length>0) {
+                    s += "\n *";
+                    for (arg of args) {
+                        s += "\n * @param "+(arg.type===null || arg.type==="" ? "" : "{"+arg.type+"} ")+arg.name;
+                        if (arg.desc!==null && arg.desc!=="") s += "\n * "+arg.desc;
+                    }
+                }
+
+                if ((rtype!==null && rtype!=="") || (rdesc!==null && rdesc!=="")) {
+                    s += "\n *\n * @returns ";
+                    if (rtype!==null && rtype!=="") s += "{"+rtype+"}";
+                    if (rtype!==null && rtype!=="" && rdesc!==null && rdesc!=="") s+= "\n * ";
+                    if (rdesc!==null && rdesc!=="") s += rdesc;
+                }
+
+                s += "\n *\n */";
+
+                return s;
+            }
+
+            function metaDiv(entry, pos) {
+                var div = document.createElement("div");
+                var hrtitle = document.createElement("hr");
+                hrtitle.style = "background-color: #AAA";
+                var subdiv = document.createElement("div");
+                subdiv.style = "min-height: 175; min-width: 1200; max-width: 1800; height: fit-content; display: table; width: 50%;";
+                var mainareadiv = document.createElement("div");
+                mainareadiv.style = "margin-right: 15; min-height: 125; width: 330; vertical-align: middle; display: table-cell; height: 100%";
+                var argsdiv = document.createElement("div");
+                argsdiv.style = "margin-right: 15; min-height: 125; width: 285; vertical-align: middle; display: table-cell; height: 100%";
+                var argstdiv = document.createElement("div");
+                argstdiv.style = "margin-right: 15; min-height: 125; width: 200; vertical-align: middle; display: table-cell; height: 100%";                     
+                var btndiv = document.createElement("div");
+                btndiv.style = "margin-right: 15; width: 120; vertical-align: middle; display: table-cell;";
+                var incdiv = document.createElement("div");
+                incdiv.style = "margin-right: 15; height: 100%; vertical-align: middle; display: table-cell;";
+                var hrfinal = document.createElement("hr");
+                hrfinal.style = "border: 1px solid #000";
+
+                var title = document.createElement("p");
+                title.style = "margin-bottom: 3";
+                var tspan = document.createElement("span");
+                var mainareatitle = document.createElement("p");
+                mainareatitle.innerHTML = "Main body";
+                mainareatitle.style = "font-weight: bold";
+                var argstitle = document.createElement("p");
+                argstitle.innerHTML = "Arguments";
+                argstitle.style = "font-weight: bold";
+                var argsttitle = document.createElement("p");
+                argsttitle.innerHTML = "Argument types";
+                argsttitle.style = "font-weight: bold";
+                var btn = document.createElement("input");
+                btn.type = "button"; btn.value = "See full"; btn.style.width = 100; btn.style.height = 50; btn.onclick = function() { see(entry.line) };
+                var mainarea = document.createElement("textarea");
+                mainarea.style = "min-width: 300; max-width: 300; min-height: 125; max-height: 275"; mainarea.id = "main"+pos;
+                var check = document.createElement("input");
+                check.type = "checkbox"; check.style.width = 20; check.style.height = 20; check.checked = true; check.id = "check"+pos;
+                var label = document.createElement("label");
+                label.style = "display: flex";
+                var checktitle = document.createElement("p");
+                checktitle.style = "margin-left: 3; margin-top: 4; margin-bottom: 0";
+                checktitle.innerHTML = "Include";
+                
+                title.innerHTML = "Line "+entry.line+": ";            
+                tspan.innerHTML = "&nbsp;"+(entry.class==null ? entry.header : entry.class+" -> "+entry.header)+"&nbsp;";
+                tspan.style = "background-color: #222; color: #EEE";
+                title.appendChild(tspan);
+
+                label.appendChild(check);
+                label.appendChild(checktitle);
+                incdiv.appendChild(label);
+                btndiv.appendChild(btn);
+                argstdiv.appendChild(argsttitle);
+                argsdiv.appendChild(argstitle);
+                if (entry.params && entry.params.length>0) {
+                    for (var z=0; z<entry.params.length; z++) {
+                        var pdiv = document.createElement("div");
+                        var plabel = document.createElement("p");
+                        plabel.style = "margin-right: 5; word-break: break-all; margin-top: 4; margin-bottom: 4"
+                        var parea = document.createElement("textarea");
+                        parea.id = "arg"+z+"entry"+pos;
+                        parea.style = "min-width: 250; max-width: 250; min-height: 50; max-height: 125";
+                        plabel.innerHTML = "• "+entry.params[z];
+                        pdiv.appendChild(plabel);
+                        pdiv.appendChild(parea);                   
+                        argsdiv.appendChild(pdiv);
+                        // ---
+                        var ptdiv = document.createElement("div");
+                        var ptlabel = document.createElement("p");
+                        ptlabel.style = "margin-right: 5; word-break: break-all; margin-top: 4; margin-bottom: 4"
+                        var ptarea = document.createElement("input");
+                        ptarea.type = "text"; ptarea.id = "argtype"+z+"entry"+pos;
+                        ptarea.style = "min-width: 100; max-width: 250; max-height: 125";
+                        ptlabel.innerHTML = "• "+entry.params[z];
+                        ptdiv.appendChild(ptlabel);
+                        ptdiv.appendChild(ptarea);                   
+                        argstdiv.appendChild(ptdiv);
+                    }   
+                } 
+                var pdiv = document.createElement("div");
+                var plabel = document.createElement("p");
+                plabel.style = "margin-right: 5; word-break: break-all; margin-top: 4; margin-bottom: 4"
+                var parea = document.createElement("textarea");
+                parea.id = "ret"+pos;
+                parea.style = "min-width: 250; max-width: 250; min-height: 50; max-height: 125; background-color: #d6dbfa";
+                plabel.innerHTML = "Return value";
+                pdiv.appendChild(plabel);
+                pdiv.appendChild(parea);                   
+                argsdiv.appendChild(pdiv);
+                // ---  
+                var ptdiv = document.createElement("div");
+                var ptlabel = document.createElement("p");
+                ptlabel.style = "margin-right: 5; word-break: break-all; margin-top: 4; margin-bottom: 4"
+                var ptarea = document.createElement("input");
+                ptarea.type = "text"; ptarea.id = "rettype"+pos;
+                ptarea.style = "min-width: 100; max-width: 250; max-height: 125; background-color: #d6dbfa";
+                ptlabel.innerHTML = "Return type";
+                ptdiv.appendChild(ptlabel);
+                ptdiv.appendChild(ptarea);                   
+                argstdiv.appendChild(ptdiv);
+
+                mainareadiv.appendChild(mainareatitle);
+                mainareadiv.appendChild(mainarea);
+                subdiv.appendChild(mainareadiv);
+                if (entry.type !== "ClassDeclaration") {
+                    subdiv.appendChild(argstdiv);
+                    subdiv.appendChild(argsdiv);
+                }
+                subdiv.appendChild(btndiv);
+                subdiv.appendChild(incdiv);
+                div.appendChild(title);
+                div.appendChild(hrtitle);
+                div.appendChild(subdiv);
+                div.appendChild(hrfinal);
+                return div;
+            }
+
+        </script>
+    </head>
+    <body onload="load()" style="font-family: monospace; font-size: 15; color: #222">
+        <h1>Scribe reading <span id="fname"></span> ...</h1>
+        <br>
+        Please note that this script is not guaranteed to work with every input.
+        <ul>
+            <li>It cannot handle invalid JavaScript.</li>
+            <li>It won't consider obscure forms of function/class declarations.</li>
+            <li>It won't process "main" files (NodeJS files with direct instructions outside of functions).</li>
+            <li>It will ignore already existing documentation.</li>
+        </ul>
+        <br>
+        <h2>Detected functions and classes</h2>
+        <div id="all"></div>
+        <div style="width: 100%; display: flex; justify-content: center">
+            <input type="button" value="Done" id="done" style="width: 100; height: 50" onclick="submit()">
+        </div>
+    </body>
+</html>
