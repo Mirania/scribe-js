@@ -58,7 +58,7 @@ function scout(filecontents) {
  */
 function metainfo(docnodes, basetext) {
     let meta = [];
-    let text = basetext.replace(/\r/g,"");
+    let text = basetext.replace(/\r/g,"").replace(/\t/g,"    ");
     let lines = text.split("\n");
     let classtext = {}; // cache
 
@@ -87,15 +87,15 @@ function metainfo(docnodes, basetext) {
         if (lineloc==-1 || indent==-1) continue; // something went wrong
 
         if (tree.type === "ClassDeclaration") 
-            meta.push({type: tree.type, line: lineloc, indent: node.class==null ? 0 : indent, header: reg[0]});
+            meta.push({type: tree.type, line: lineloc, indent: indent, header: reg[0]});
         else if (tree.type === "MethodDefinition") 
-            meta.push({type: tree.type, line: lineloc, indent: node.class==null ? 0 : indent, header: reg[0], class: node.class, 
+            meta.push({type: tree.type, line: lineloc, indent: indent, header: reg[0], class: node.class, 
                        params: tree.value.params.map((p) => p.name)});
         else if (tree.type === "FunctionDeclaration") 
-            meta.push({type: tree.type, line: lineloc, indent: node.class==null ? 0 : indent, header: reg[0], class: node.class, 
+            meta.push({type: tree.type, line: lineloc, indent: indent, header: reg[0], class: node.class, 
                        params: tree.params.map((p) => p.name)});
         else
-            meta.push({type: tree.type, line: lineloc, indent: node.class==null ? 0 : indent, header: node.kind+" "+reg[0], 
+            meta.push({type: tree.type, line: lineloc, indent: indent, header: node.kind+" "+reg[0], 
                        class: node.class, params: tree.init.params.map((p) => p.name)});
     }
 
