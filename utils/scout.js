@@ -90,15 +90,15 @@ function metainfo(docnodes, basetext) {
             meta.push({type: tree.type, line: lineloc, indent: indent, header: reg[0]});
         else if (tree.type === "MethodDefinition") 
             meta.push({type: tree.type, line: lineloc, indent: indent, header: reg[0], class: node.class, 
-                       params: tree.value.params.map((p) => p.name)});
+                       params: tree.value.params.map((p) => p.type === "RestElement" ? p.argument.name : p.name)});
         else if (tree.type === "FunctionDeclaration") 
             meta.push({type: tree.type, line: lineloc, indent: indent, header: reg[0], class: node.class, 
-                       params: tree.params.map((p) => p.name)});
+                       params: tree.params.map((p) => p.type === "RestElement" ? p.argument.name : p.name)});
         else
-            meta.push({type: tree.type, line: lineloc, indent: indent, header: node.kind+" "+reg[0], 
-                       class: node.class, params: tree.init.params.map((p) => p.name)});
+            meta.push({type: tree.type, line: lineloc, indent: indent - (node.kind+" ").length, header: node.kind+" "+reg[0], 
+                       class: node.class, params: tree.init.params.map((p) => p.type === "RestElement" ? p.argument.name : p.name)});
     }
-
+    
     return meta;
 }
 
