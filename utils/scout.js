@@ -186,7 +186,8 @@ function buildRegExp(node) {
         else r += many;
         r += node.id.name+any+"\\(";       
         for (let i=0; i<node.params.length; i++) {
-            r += any+node.params[i].name+any;
+            if (node.params[i].type === "RestElement") r += any+"\\.\\.\\."+node.params[i].argument.name+any;
+            else r += any+node.params[i].name+any;
             if (i!=node.params.length-1) r += ",";
         }
         r += "\\)"+any+"{";
@@ -200,7 +201,8 @@ function buildRegExp(node) {
         r += any;
         r += "\\(";
         for (let i=0; i<node.init.params.length; i++) {
-            r += any+node.init.params[i].name+any;
+            if (node.params[i].type === "RestElement") r += any+"\\.\\.\\."+node.params[i].argument.name+any;
+            else r += any+node.init.params[i].name+any;
             if (i!=node.init.params.length-1) r += ",";
         }
         r += "\\)"+any+"{";
@@ -211,7 +213,8 @@ function buildRegExp(node) {
         if (node.init.async) r += "async"+many;
         r += "\\(";
         for (let i=0; i<node.init.params.length; i++) {
-            r += any+node.init.params[i].name+any;
+            if (node.init.params[i].type === "RestElement") r += any+"\\.\\.\\."+node.init.params[i].argument.name+any;
+            else r += any+node.init.params[i].name+any;
             if (i!=node.init.params.length-1) r += ",";
         }
         r += "\\)"+any+"=>";
@@ -229,7 +232,8 @@ function buildRegExp(node) {
         if (node.kind === "set") r += any+node.value.params[0].name+any;
         if (node.kind === "method" || node.kind === "constructor") {
             for (let i=0; i<node.value.params.length; i++) {
-                r += any+node.value.params[i].name+any;
+                if (node.value.params[i].type === "RestElement") r += any+"\\.\\.\\."+node.value.params[i].argument.name+any;
+                else r += any+node.value.params[i].name+any;
                 if (i!=node.value.params.length-1) r += ",";
             }
         }
