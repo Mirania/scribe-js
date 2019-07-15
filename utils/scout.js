@@ -201,7 +201,7 @@ function buildRegExp(node) {
         r += any;
         r += "\\(";
         for (let i=0; i<node.init.params.length; i++) {
-            if (node.params[i].type === "RestElement") r += any+"\\.\\.\\."+node.params[i].argument.name+any;
+            if (node.init.params[i].type === "RestElement") r += any+"\\.\\.\\."+node.init.params[i].argument.name+any;
             else r += any+node.init.params[i].name+any;
             if (i!=node.init.params.length-1) r += ",";
         }
