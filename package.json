@@ -13,7 +13,7 @@
   "author": "Me",
   "license": "MIT",
   "dependencies": {
-    "acorn": "^6.1.1"
+    "acorn": "^6.4.1"
   },
   "devDependencies": {}
 }
